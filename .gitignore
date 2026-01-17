@@ -1,0 +1,27 @@
+# --- OS & IDE ---
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# --- Terraform ---
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+!example.tfvars
+crash.log
+
+# --- Ansible ---
+*.retry
+*.pem
+*.key
+ansible_collections/
+
+# --- Application ---
+.env
+!env.example
+
+# --- Logs & Temp ---
+*.log
+tmp/
