@@ -82,7 +82,7 @@ L'architecture repose sur une segmentation stricte par VLANs (Switchs Virtuels).
 ### 4.1 Schéma d'Architecture
 *(Voir le schéma détaillé fourni en annexe du dossier d'architecture)*
 
-> 💡 *Note : Insérer ici l'img architecture*
+![Architecture réseau du projet](./AIS-architecture_v2.png)
 
 ### 4.2 Flux d'Administration (Secure Path)
 L'accès aux serveurs internes est interdit depuis le LAN utilisateur ou Internet, sauf via le processus suivant :
@@ -93,4 +93,5 @@ L'accès aux serveurs internes est interdit depuis le LAN utilisateur ou Interne
 ### 4.3 Flux Applicatif Public
 1.  **Internet** -> HTTPS (443) -> **Firewall**.
 2.  **Firewall** -> **vm-proxy** (Terminaison SSL).
+
 3.  **vm-proxy** -> HTTP (80) -> **vm-prod** (Service K3s NodePort).
