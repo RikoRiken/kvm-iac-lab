@@ -45,6 +45,7 @@ The stack is strictly segmented into VLANs to enforce a **Zero-Trust** security 
 | **BACKUP**| 40 | Isolated | BorgBackup Repository |
 | **MONIT** | 50 | Observability | **PLG Stack** (Prometheus, Loki, Grafana) |
 
+> Check the **Firewall Policy** for more information at [docs/firewall_policy.md](./docs/firewall_policy.md).
 <br>
 
 ## 🚀 Getting Started
@@ -115,3 +116,4 @@ This infrastructure implements strict security measures validated by the [Firewa
 ## 📝 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
+
