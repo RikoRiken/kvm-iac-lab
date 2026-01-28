@@ -10,8 +10,6 @@
 [![OPNSense](https://img.shields.io/badge/-OPNSense-D94F00?style=flat&logo=opnsense&logoColor=white)](#)
 [![Grafana](https://img.shields.io/badge/Grafana-F46800?logo=grafana&logoColor=white)](#)
 [![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?logo=prometheus&logoColor=white)](#)
-[![nginx](https://img.shields.io/badge/nginx-009639?logo=nginx&logoColor=fff)](#)
-[![BookStack](https://img.shields.io/badge/-BookStack-0288D1?style=flat&logo=bookstack&logoColor=white)](#)
 
 <br>
 
@@ -26,13 +24,15 @@ Unlike simple Docker-compose setups, this project simulates a **Real-World Archi
 
 It is designed to be **environment-agnostic**: network plans (CIDR), resources (RAM/CPU), and domain names are fully customizable via variables, making it compatible with any homelab setup.
 
-> 🇫🇷 **Français :** La documentation technique détaillée, l'IPAM et la Matrice de Flux sont disponibles en français dans le dossier [docs/fr](./docs/fr/).
+> 🇫🇷 **Français :** La documentation technique détaillée, l'IPAM et la Matrice de Flux sont disponibles en français dans le dossier [docs/fr/](./docs/fr/).
 
 <br>
 
 ## 🏗️ Architecture
 
 ![Architecture Schema](./docs/Architecture_v3.png)
+
+> Check the [IP Address Management](./docs/ipam.md) for further information.
 
 The stack is strictly segmented into VLANs to enforce a **Zero-Trust** security model:
 
@@ -45,7 +45,7 @@ The stack is strictly segmented into VLANs to enforce a **Zero-Trust** security 
 | **BACKUP**| 40 | Isolated | BorgBackup Repository |
 | **MONIT** | 50 | Observability | **PLG Stack** (Prometheus, Loki, Grafana) |
 
-> Check the **Firewall Policy** for more information at [docs/firewall_policy.md](./docs/firewall_policy.md).
+> Check the [Firewall Policy](./docs/firewall_policy.md) for further information.
 <br>
 
 ## 🚀 Getting Started
@@ -84,8 +84,6 @@ Launch the bootstrap script to build the infrastructure and configure services.
 <br>
 
 ## 🛡️ Security Strategy
-
-This infrastructure implements strict security measures validated by the [Firewall Policy](docs/firewall_policy.md):
 
 - OPNsense Firewall: Acts as the central gateway. All Inter-VLAN traffic is inspected.
 
