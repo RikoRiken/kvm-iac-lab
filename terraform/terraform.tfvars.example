@@ -1,0 +1,44 @@
+# =================================================================
+# 📝 LOCAL CONFIGURATION EXAMPLE
+# =================================================================
+
+# INSTRUCTIONS :
+# 1. Copy this file : cp terraform.tfvars.example terraform.tfvars
+# 2. Edit this file accordingly to your environment and ressources. (delete '#' on lines you need, otherwise it use default terraform/variables.tf)
+# 3. NEVER commit your file terraform.tfvars (contains your secrets).
+# =================================================================
+
+
+# --- 1. Local optimisation (Performance) ---
+
+# If you already has downloaded Debian image locally, you can specify it to speed up the build time:
+# debian_image_path = "/home/your_user/folder/debian-12-genericcloud-amd64.qcow2"
+
+# If you're using a distant connection to KVM (ex: from Windows to Linux) :
+# libvirt_uri = "qemu+ssh://user@192.168.x.x/system"
+
+# --- 2. SSH Configuration (Access) ---
+# Path to YOUR public key (will be uploaded to all VMs)
+
+# ssh_key_path = "~/.ssh/id_ed25519.pub"
+
+
+# --- 3. Ressources sizing (Depending on your RAM ressources available) ---
+
+# LOW SPEC : Modest config (PC with 8GB RAM) :
+# Goal is 5.5GB to let 2.5GB for host machine
+# vm_fw_ram      = 1536
+# vm_prod_ram    = 2048
+# vm_monitor_ram = 1024
+# vm_bastion_ram = 512
+# vm_proxy_ram   = 512
+# vm_backup_ram  = 512
+
+# HIGH SPEC : Comfortable config (PC with 32GB+ RAM) :
+# vm_prod_ram    = 8192
+
+
+# --- 4. Network (Issue with IP conflict) ---
+
+# network_cidr = "10.0.0.0/16"
+# domain_name  = "mylab.local"
