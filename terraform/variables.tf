@@ -26,7 +26,8 @@ variable "network_cidr" {
 variable "domain_name"  { 
     description = "Local lab domain name"
     type = string
-    default = "kvm-iac.lab" }
+    default = "kvm-iac.lab" 
+    }
 
 
 # --- Ressources ---

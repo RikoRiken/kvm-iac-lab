@@ -215,8 +215,17 @@ resource "libvirt_domain" "bastion" {
   }
 
   disk { volume_id = libvirt_volume.bastion_disk.id }
-  console { type = "pty"; target_port = "0"; target_type = "serial" }
-  graphics { type = "spice"; listen_type = "address"; autoport = true }
+  console {
+    type        = "pty"
+    target_port = "0"
+    target_type = "serial"
+  }
+
+  graphics {
+    type        = "spice"
+    listen_type = "address"
+    autoport    = true
+  }
 }
 
 # --- C. Proxy (Zone DMZ) ---
@@ -229,8 +238,17 @@ resource "libvirt_domain" "proxy" {
   network_interface { network_name = "vlan-dmz" }
 
   disk { volume_id = libvirt_volume.proxy_disk.id }
-  console { type = "pty"; target_port = "0"; target_type = "serial" }
-  graphics { type = "spice"; listen_type = "address"; autoport = true }
+  console {
+    type        = "pty"
+    target_port = "0"
+    target_type = "serial"
+  }
+
+  graphics {
+    type        = "spice"
+    listen_type = "address"
+    autoport    = true
+  }
 }
 
 # --- D. Prod (Zone PROD) ---
@@ -243,8 +261,17 @@ resource "libvirt_domain" "prod" {
   network_interface { network_name = "vlan-prod" }
 
   disk { volume_id = libvirt_volume.prod_disk.id }
-  console { type = "pty"; target_port = "0"; target_type = "serial" }
-  graphics { type = "spice"; listen_type = "address"; autoport = true }
+  console {
+    type        = "pty"
+    target_port = "0"
+    target_type = "serial"
+  }
+
+  graphics {
+    type        = "spice"
+    listen_type = "address"
+    autoport    = true
+  }
 }
 
 # --- E. Backup (Zone BACKUP) ---
@@ -257,8 +284,17 @@ resource "libvirt_domain" "backup" {
   network_interface { network_name = "vlan-backup" }
 
   disk { volume_id = libvirt_volume.backup_disk.id }
-  console { type = "pty"; target_port = "0"; target_type = "serial" }
-  graphics { type = "spice"; listen_type = "address"; autoport = true }
+  console {
+    type        = "pty"
+    target_port = "0"
+    target_type = "serial"
+  }
+
+  graphics {
+    type        = "spice"
+    listen_type = "address"
+    autoport    = true
+  }
 }
 
 # --- F. Monitoring (Zone MONITOR) ---
@@ -271,6 +307,15 @@ resource "libvirt_domain" "monitor" {
   network_interface { network_name = "vlan-monitor" }
 
   disk { volume_id = libvirt_volume.monitor_disk.id }
-  console { type = "pty"; target_port = "0"; target_type = "serial" }
-  graphics { type = "spice"; listen_type = "address"; autoport = true }
+  console {
+    type        = "pty"
+    target_port = "0"
+    target_type = "serial"
+  }
+
+  graphics {
+    type        = "spice"
+    listen_type = "address"
+    autoport    = true
+  }
 }
