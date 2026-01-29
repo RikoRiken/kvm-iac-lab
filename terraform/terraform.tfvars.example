@@ -17,6 +17,7 @@
 # If you're using a distant connection to KVM (ex: from Windows to Linux) :
 # libvirt_uri = "qemu+ssh://user@192.168.x.x/system"
 
+
 # --- 2. SSH Configuration (Access) ---
 # Path to YOUR public key (will be uploaded to all VMs)
 

@@ -127,7 +127,7 @@ data "template_file" "user_data" {
   }
 }
 
-#Creating ISO file to configure each machine with hostname, ssh pub key...
+# Creating ISO file to configure each machine with hostname, ssh pub key...
 resource "libvirt_cloudinit_disk" "bastion_init" {
   name      = "bastion-init.iso"
   user_data = templatefile("${path.module}/cloud_init.cfg", { hostname = "vm-bastion", user = var.ssh_username, ssh_key = file(var.ssh_key_path), domain = var.domain_name })
@@ -207,11 +207,10 @@ resource "libvirt_domain" "bastion" {
   vcpu   = 1
   cloudinit = libvirt_cloudinit_disk.bastion_init.id
 
-  # Connecté uniquement au VLAN MGMT (Sécurité !)
-  # L'accès SSH viendra du Port Forwarding d'OPNsense
+  # Only connected to MGMT vlan network (Security)
   network_interface { 
     network_name = "vlan-mgmt" 
-    wait_for_lease = false # Pas de DHCP Libvirt ici, c'est OPNsense qui donnera l'IP
+    wait_for_lease = false # No libvirt DHCP, OPNsense will handle IP address
   }
 
   disk { volume_id = libvirt_volume.bastion_disk.id }
