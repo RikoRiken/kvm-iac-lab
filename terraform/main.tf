@@ -118,7 +118,8 @@ resource "libvirt_volume" "fw_disk" {
 # 3. CONFIGURATION (CLOUD-INIT utilty)
 # =================================================================
 
-# BUG FIX: Ce bloc global génère une erreur "Unknown variable" car le fichier cloud_init.cfg attend une variable ${hostname}.
+# --- BUG FIX ---
+# Ce bloc global génère une erreur "Unknown variable" car le fichier cloud_init.cfg attend une variable ${hostname}.
 # Comme le hostname change pour chaque VM, on ne peut pas le définir ici globalement.
 # SOLUTION: On utilise la fonction templatefile() directement dans chaque ressource "libvirt_cloudinit_disk" plus bas.
 
