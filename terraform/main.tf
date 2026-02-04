@@ -118,6 +118,12 @@ resource "libvirt_volume" "fw_disk" {
 # 3. CONFIGURATION (CLOUD-INIT utilty)
 # =================================================================
 
+# --- BUG FIX ---
+# Ce bloc global génère une erreur "Unknown variable" car le fichier cloud_init.cfg attend une variable ${hostname}.
+# Comme le hostname change pour chaque VM, on ne peut pas le définir ici globalement.
+# SOLUTION: On utilise la fonction templatefile() directement dans chaque ressource "libvirt_cloudinit_disk" plus bas.
+
+/*
 data "template_file" "user_data" {
   template = file("${path.module}/cloud_init.cfg")
   vars = {
@@ -126,6 +132,7 @@ data "template_file" "user_data" {
     domain  = var.domain_name
   }
 }
+*/
 
 # Creating ISO file to configure each machine with hostname, ssh pub key...
 resource "libvirt_cloudinit_disk" "bastion_init" {
