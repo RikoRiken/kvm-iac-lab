@@ -104,15 +104,15 @@ resource "libvirt_volume" "monitor_disk" {
 }
 
 # 1.3 SPECIFIC CASE : OPNsense disk
-# TODO : Il faudra placer manuellement l'image "opnsense.qcow2" dans /var/lib/libvirt/images
-# ou créer un volume base comme pour Debian si tu as l'URL.
-# Pour l'instant, création disque vide qu'on écrasera ou une réf vers une base.
+# OPNsense disk is handled in opnsense_setup.tf
+/* 
 resource "libvirt_volume" "fw_disk" {
   name   = "opnsense-fw.qcow2"
   pool   = "default"
   format = "qcow2"
   source = "/var/lib/libvirt/images/opnsense-base.qcow2" # <--- ATTENTION : image n'existe pas
 }
+*/
 
 # =================================================================
 # 3. CONFIGURATION (CLOUD-INIT utilty)
@@ -175,7 +175,14 @@ resource "libvirt_domain" "opnsense" {
   memory = var.vm_fw_ram
   vcpu   = 2
 
-  disk { volume_id = libvirt_volume.fw_disk.id }
+# OPNsense needs two disks : the main one and a config one (with XML file)
+# These 2 disks are defined in opnsense_setup.tf
+  disk { 
+    volume_id = libvirt_volume.fw_disk.id 
+  }
+  disk {
+    volume_id = libvirt_volume.config_disk.id
+  }
 
   # vtnet0/eth0 : WAN (Internet)
   network_interface { network_name = "wan-network" }
