@@ -11,6 +11,7 @@
 *.tfvars
 !example.tfvars
 crash.log
+images/*
 
 # --- Ansible ---
 *.retry
