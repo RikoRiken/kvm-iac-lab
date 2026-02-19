@@ -1,10 +1,10 @@
 # 🛡️ Matrice de Flux Réseau (Firewall Policy)
 
-Ce document définit la politique de filtrage appliquée sur le pare-feu central **OPNsense**. Il traduit les exigences de segmentation du projet en règles techniques concrètes. L'approche retenue est le **"Deny All by Default"** (tout ce qui n'est pas explicitement autorisé est interdit).
+Ce document définit la politique de filtrage appliquée sur le pare-feu central **Debian**. Il traduit les exigences de segmentation du projet en règles techniques concrètes. L'approche retenue est le **"Deny All by Default"** (tout ce qui n'est pas explicitement autorisé est interdit).
 
 ## 1. Objets & Alias (Définitions)
 
-Pour simplifier la lecture et la configuration OPNsense, les alias suivants sont utilisés :
+Pour simplifier la lecture et la configuration du routeur/pare-feu, les alias suivants sont utilisés :
 
 | Alias | Valeur / IP | Description |
 | :--- | :--- | :--- |
@@ -33,7 +33,7 @@ Pour simplifier la lecture et la configuration OPNsense, les alias suivants sont
 | ID | Source | Destination | Port / Proto | Action | Description / Justification |
 | :--- | :--- | :--- | :--- | :---: | :--- |
 | **ADM-01** | *INTERNET* | `HOST_BASTION` | 2222 (TCP) | ✅ ALLOW | Port Forward : `WAN:2222` -> `HOST_BASTION:22`.<br>⚠️ Sécurité : Authentification par Clé uniquement. Mots de passe désactivés. Protection bruteforce par CrowdSec. |
-| **ADM-02** | `VLAN_MGMT` | `GW_FW` | 443 (TCP) | ✅ ALLOW | Accès à l'interface web OPNsense depuis le réseau d'admin. |
+| **ADM-02** | `VLAN_MGMT` | `GW_FW` | 443 (TCP) | ✅ ALLOW | Accès à l'interface web du pare-feu depuis le réseau d'admin. |
 | **ADM-03** | `VLAN_MGMT` | `GW_FW` | 22 (TCP) | ✅ ALLOW | Accès SSH de secours au Firewall. |
 | **ADM-04** | `HOST_BASTION` | `ALL_VLAN` | 22 (TCP) | ✅ ALLOW | **Rebond SSH** : Le Bastion doit pouvoir administrer toutes les VMs internes. |
 
@@ -67,7 +67,7 @@ Pour simplifier la lecture et la configuration OPNsense, les alias suivants sont
 
 | ID | Source | Destination | Port / Proto | Action | Description / Justification |
 | :--- | :--- | :--- | :--- | :---: | :--- |
-| **INF-01** | `ALL_VLAN` | `GW_FW` | 53 (UDP/TCP)| ✅ ALLOW | Résolution DNS via le Resolver OPNsense (Unbound). |
+| **INF-01** | `ALL_VLAN` | `GW_FW` | 53 (UDP/TCP)| ✅ ALLOW | Résolution DNS via le Resolver (Unbound). |
 | **INF-02** | `ALL_VLAN` | `GW_FW` | 123 (UDP) | ✅ ALLOW | Synchronisation horaire NTP. |
 | **INF-03** | `ALL_VLAN` | *INTERNET* | 80, 443 (TCP)| ✅ ALLOW | Mises à jour système et CrowdSec. Ajout d'un proxy whitelist (squid) pour hardening. |
 | **INF-04** | `ALL_VLAN` | `GW_FW` | ICMP (Ping) | ✅ ALLOW | Test de connectivité à la Gateway/Firewall. |
