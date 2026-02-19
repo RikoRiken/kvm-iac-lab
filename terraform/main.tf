@@ -21,8 +21,9 @@ resource "libvirt_network" "wan" {
   name      = "wan-network"
   mode      = "nat"
   domain    = "wan.local"
-  addresses = ["192.168.122.0/24"] # Standard Libvirt
+  addresses = ["192.168.122.0/24"]
   dhcp { enabled = true }
+  dns { enabled = true } 
 }
 
 # 1.2 VLANs (Isolated networks)
@@ -68,6 +69,13 @@ resource "libvirt_volume" "debian_base" {
 
 # 1.2 VMs disks (Cloned from the default image : "Copy-On-Write" process)
 
+resource "libvirt_volume" "router_disk" {
+  name           = "router-disk.qcow2"
+  base_volume_id = libvirt_volume.debian_base.id
+  pool           = "default"
+  size           = 5368709120 # 5 Go 
+}
+
 resource "libvirt_volume" "bastion_disk" {
   name           = "bastion.qcow2"
   base_volume_id = libvirt_volume.debian_base.id
@@ -103,17 +111,6 @@ resource "libvirt_volume" "monitor_disk" {
   size           = 21474836480 # 20GB (Logs Loki)
 }
 
-# 1.3 SPECIFIC CASE : OPNsense disk
-# OPNsense disk is handled in opnsense_setup.tf
-/* 
-resource "libvirt_volume" "fw_disk" {
-  name   = "opnsense-fw.qcow2"
-  pool   = "default"
-  format = "qcow2"
-  source = "/var/lib/libvirt/images/opnsense-base.qcow2" # <--- ATTENTION : image n'existe pas
-}
-*/
-
 # =================================================================
 # 3. CONFIGURATION (CLOUD-INIT utilty)
 # =================================================================
@@ -135,9 +132,22 @@ data "template_file" "user_data" {
 */
 
 # Creating ISO file to configure each machine with hostname, ssh pub key...
+
+resource "libvirt_cloudinit_disk" "router_init" {
+  name           = "router-init.iso"
+  user_data      = data.template_file.router_user_data.rendered
+  pool           = "default"
+}
+
 resource "libvirt_cloudinit_disk" "bastion_init" {
   name      = "bastion-init.iso"
-  user_data = templatefile("${path.module}/cloud_init.cfg", { hostname = "vm-bastion", user = var.ssh_username, ssh_key = file(var.ssh_key_path), domain = var.domain_name })
+  user_data = templatefile("${path.module}/cloud_init.cfg", { 
+    hostname = "vm-bastion", 
+    user = var.ssh_username, 
+    # trimspace() enlève le saut de ligne tueur
+    # pathexpand() corrige le bug du tilde "~"
+    ssh_key  = trimspace(file(pathexpand(var.ssh_key_path))), 
+    domain = var.domain_name })
   pool      = "default"
 }
 
@@ -162,57 +172,46 @@ resource "libvirt_cloudinit_disk" "backup_init" {
 resource "libvirt_cloudinit_disk" "monitor_init" {
   name      = "monitor-init.iso"
   user_data = templatefile("${path.module}/cloud_init.cfg", { hostname = "vm-monitor", user = var.ssh_username, ssh_key = file(var.ssh_key_path), domain = var.domain_name })
-  pool      = "default"
+  pool = "default"
 }
+
 
 # =================================================================
 # 4. VIRTUAL MACHINES (COMPUTE)
 # =================================================================
 
-# --- 1. Firewall ---
-resource "libvirt_domain" "opnsense" {
+# --- A. Router (Debian 12)---
+
+resource "libvirt_domain" "router" {
   name   = "vm-fw"
-  memory = var.vm_fw_ram
-  vcpu   = 2
-
-# OPNsense needs two disks : the main one and a config one (with XML file)
-# These 2 disks are defined in opnsense_setup.tf
-  disk { 
-    volume_id = libvirt_volume.fw_disk.id 
-  }
-  disk {
-    volume_id = libvirt_volume.config_disk.id
-  }
-
-  # vtnet0/eth0 : WAN (Internet)
-  network_interface { network_name = "wan-network" }
-
-  # vtnet1/eth1 : LAN MGMT (VLAN 10)
-  network_interface { network_name = "vlan-mgmt" }
-
-  # vtnet2/eth2 : LAN DMZ (VLAN 20)
-  network_interface { network_name = "vlan-dmz" }
-
-  # vtnet3/eth3 : LAN PROD (VLAN 30)
-  network_interface { network_name = "vlan-prod" }
-
-  # vtnet4/eth4 : LAN BACKUP (VLAN 40)
-  network_interface { network_name = "vlan-backup" }
+  memory = 1024
+  vcpu   = 1
   
-  # vtnet5/eth5 : LAN MONITOR (VLAN 50)
-  network_interface { network_name = "vlan-monitor" }
+  cloudinit = libvirt_cloudinit_disk.router_init.id
+
+  network_interface { network_name = "wan-network" }   # eth0
+  network_interface { network_name = "vlan-mgmt" }     # eth1
+  network_interface { network_name = "vlan-dmz" }      # eth2
+  network_interface { network_name = "vlan-prod" }     # eth3
+  network_interface { network_name = "vlan-backup" }   # eth4
+  network_interface { network_name = "vlan-monitor" }  # eth5
+
+  disk {
+    volume_id = libvirt_volume.router_disk.id
+  }
 
   console {
     type        = "pty"
     target_port = "0"
     target_type = "serial"
   }
+
   graphics {
     type        = "spice"
     listen_type = "address"
     autoport    = true
   }
-}
+} 
 
 # --- B. Bastion (Zone MGMT) ---
 resource "libvirt_domain" "bastion" {
@@ -220,14 +219,17 @@ resource "libvirt_domain" "bastion" {
   memory = var.vm_bastion_ram
   vcpu   = 1
   cloudinit = libvirt_cloudinit_disk.bastion_init.id
+  # qemu_agent = true
+  depends_on = [libvirt_domain.router]
+  # Only connected to MGMT vlan network
 
-  # Only connected to MGMT vlan network (Security)
   network_interface { 
     network_name = "vlan-mgmt" 
-    wait_for_lease = false # No libvirt DHCP, OPNsense will handle IP address
+    wait_for_lease = false
   }
 
   disk { volume_id = libvirt_volume.bastion_disk.id }
+
   console {
     type        = "pty"
     target_port = "0"
@@ -247,8 +249,13 @@ resource "libvirt_domain" "proxy" {
   memory = var.vm_proxy_ram
   vcpu   = 1
   cloudinit = libvirt_cloudinit_disk.proxy_init.id
+  # qemu_agent = true
+  depends_on = [libvirt_domain.router]
 
-  network_interface { network_name = "vlan-dmz" }
+  network_interface { 
+    network_name = "vlan-dmz"
+    wait_for_lease = false
+    }
 
   disk { volume_id = libvirt_volume.proxy_disk.id }
   console {
@@ -270,8 +277,13 @@ resource "libvirt_domain" "prod" {
   memory = var.vm_prod_ram
   vcpu   = 2 # K3s a besoin d'un peu de CPU
   cloudinit = libvirt_cloudinit_disk.prod_init.id
+  # qemu_agent = true
+  depends_on = [libvirt_domain.router]
 
-  network_interface { network_name = "vlan-prod" }
+  network_interface { 
+    network_name = "vlan-prod"
+    wait_for_lease = false
+    }
 
   disk { volume_id = libvirt_volume.prod_disk.id }
   console {
@@ -293,10 +305,16 @@ resource "libvirt_domain" "backup" {
   memory = var.vm_backup_ram
   vcpu   = 1
   cloudinit = libvirt_cloudinit_disk.backup_init.id
+  # qemu_agent = true
+  depends_on = [libvirt_domain.router]
 
-  network_interface { network_name = "vlan-backup" }
+  network_interface { 
+    network_name = "vlan-backup"
+    wait_for_lease = false
+    }
 
   disk { volume_id = libvirt_volume.backup_disk.id }
+  
   console {
     type        = "pty"
     target_port = "0"
@@ -316,10 +334,16 @@ resource "libvirt_domain" "monitor" {
   memory = var.vm_monitor_ram
   vcpu   = 2
   cloudinit = libvirt_cloudinit_disk.monitor_init.id
+  # qemu_agent = true
+  depends_on = [libvirt_domain.router]
 
-  network_interface { network_name = "vlan-monitor" }
+  network_interface { 
+    network_name = "vlan-monitor"
+    wait_for_lease = false
+    }
 
   disk { volume_id = libvirt_volume.monitor_disk.id }
+  
   console {
     type        = "pty"
     target_port = "0"

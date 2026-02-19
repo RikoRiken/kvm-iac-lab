@@ -4,7 +4,7 @@
 
 ### 1.1 Network Identity
 * **Private Network Range:** `172.16.0.0/16` (RFC1918)
-* **Technology:** Isolated virtual networks (KVM/Libvirt) routed by OPNsense.
+* **Technology:** Isolated virtual networks (KVM/Libvirt) routed by the Debian FW.
 
 ### 1.2 Naming Convention
 Format: `vm-<role>`
@@ -18,7 +18,7 @@ For each subnet (`/24`), the distribution is standardized:
 | `.1` - `.9` | **Infrastructure** | Reserved for Virtual Switches & Network Equipment |
 | `.10` - `.99` | **Servers (Static IP)** | Infrastructure and Application VMs |
 | `.100` - `.199` | **DHCP Pool** | Temporary clients (if applicable) |
-| `.254` | **Gateway** | Firewall Interface (OPNsense) |
+| `.254` | **Gateway** | Firewall Interface |
 
 ---
 
@@ -43,7 +43,7 @@ The architecture relies on strict segmentation using VLANs (Virtual Switches).
 
 | Hostname | IP (Internal) | OS | Role |
 | :--- | :--- | :--- | :--- |
-| **vm-fw** | `172.16.10.254`<br>`172.16.20.254`<br>`172.16.30.254`<br>`172.16.40.254`<br>`172.16.50.254` | **OPNsense** | Firewall, Inter-VLAN Routing, DHCP, DNS Resolver. |
+| **vm-fw** | `172.16.10.254`<br>`172.16.20.254`<br>`172.16.30.254`<br>`172.16.40.254`<br>`172.16.50.254` | **Debian Router/FW** | Firewall, Inter-VLAN Routing, DHCP, DNS Resolver. |
 
 ### 3.2 MANAGEMENT Zone (VLAN 10)
 
@@ -82,7 +82,7 @@ The architecture relies on strict segmentation using VLANs (Virtual Switches).
 ### 4.1 Architecture Diagram
 *(See the detailed diagram provided in the architecture folder)*
 
-> 💡 *Note: Insert architecture image here*
+![Architecture](architecture_v4.png)
 
 ### 4.2 Administration Flows (Secure Path)
 Access to internal servers is forbidden from the User LAN or Internet, except via the following process:

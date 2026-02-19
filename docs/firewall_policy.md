@@ -1,6 +1,6 @@
 # 🛡️ Network Flow Matrix (Firewall Policy)
 
-This document defines the filtering policy applied on the **OPNsense** central firewall. It translates the project's segmentation requirements into concrete technical rules. The adopted approach is **"Deny All by Default"** (traffic not explicitly allowed is forbidden).
+This document defines the filtering policy applied on the **Debian Router** central firewall. It translates the project's segmentation requirements into concrete technical rules. The adopted approach is **"Deny All by Default"** (traffic not explicitly allowed is forbidden).
 
 ## 1. Objects & Aliases (Definitions)
 

@@ -7,7 +7,6 @@
 [![Kubernetes](https://img.shields.io/badge/-Kubernetes-326CE5?style=flat&logo=kubernetes&logoColor=white)](#)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=fff)](#)
 [![MariaDB](https://img.shields.io/badge/MariaDB-003545?logo=mariadb&logoColor=white)](#)
-[![OPNSense](https://img.shields.io/badge/-OPNSense-D94F00?style=flat&logo=opnsense&logoColor=white)](#)
 [![Grafana](https://img.shields.io/badge/Grafana-F46800?logo=grafana&logoColor=white)](#)
 [![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?logo=prometheus&logoColor=white)](#)
 
@@ -30,7 +29,7 @@ It is designed to be **environment-agnostic**: network plans (CIDR), resources (
 
 ## 🏗️ Architecture
 
-![Architecture Schema](./docs/Architecture_v3.png)
+![Architecture Schema](./docs/architecture_v4.png)
 
 > Check the [IP Address Management](./docs/ipam.md) for further information.
 
@@ -107,7 +106,7 @@ Launch the bootstrap script to build the infrastructure and configure services.
 
 - [K3s](https://k3s.io/) - Lightweight Kubernetes distribution for Production apps.
 
-- [OPNsense](https://opnsense.org/) - Open Source Firewall & Routing Platform.
+- [Linux: Debian](https://debian.org/) - Linux distribution for router/fw and prod machines.
 
 <br>
 

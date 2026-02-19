@@ -43,7 +43,7 @@ L'architecture repose sur une segmentation stricte par VLANs (Switchs Virtuels).
 
 | Hostname | IP (Internes) | OS | Rôle |
 | :--- | :--- | :--- | :--- |
-| **vm-fw** | `172.16.10.254`<br>`172.16.20.254`<br>`172.16.30.254`<br>`172.16.40.254`<br>`172.16.50.254` | **OPNsense** | Pare-feu, Routage Inter-VLAN, DHCP, DNS Resolver. |
+| **vm-fw** | `172.16.10.254`<br>`172.16.20.254`<br>`172.16.30.254`<br>`172.16.40.254`<br>`172.16.50.254` | **Routeur Debian** | Pare-feu, Routage Inter-VLAN, DHCP, DNS Resolver. |
 
 ### 3.2 Zone MANAGEMENT (VLAN 10)
 
@@ -82,7 +82,7 @@ L'architecture repose sur une segmentation stricte par VLANs (Switchs Virtuels).
 ### 4.1 Schéma d'Architecture
 *(Voir le schéma détaillé fourni en annexe du dossier d'architecture)*
 
-![Architecture FR](fr_Architecture_v3.png)
+![Architecture FR](fr_architecture_v4.png)
 
 ### 4.2 Flux d'Administration (Secure Path)
 L'accès aux serveurs internes est interdit depuis le LAN utilisateur ou Internet, sauf via le processus suivant :

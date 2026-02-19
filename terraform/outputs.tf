@@ -15,11 +15,11 @@ output "bastion_ip" {
   value       = try(libvirt_domain.bastion.network_interface[0].addresses[0], "Wait for OPNsense DHCP...")
 }
 
-output "firewall_wan_ip" {
-  description = "Firewall WAN IP (Web Interface)"
-  value       = try(libvirt_domain.opnsense.network_interface[0].addresses[0], "Check via 'terraform refresh' later")
+output "router_wan_ip" {
+  description = "Router WAN IP (Web Interface)"
+  value       = try(libvirt_domain.router.network_interface[0].addresses[0], "Check via 'terraform refresh' later")
 }
 
 output "setup_instruction" {
-  value = "Wait 2-3 minutes for OPNsense to boot completely. Then run 'terraform refresh' to reveal IPs."
+  value = "Wait 2-3 minutes for the router to boot completely. Then run 'terraform refresh' to reveal IPs."
 }
