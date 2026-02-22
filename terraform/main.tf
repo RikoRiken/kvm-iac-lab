@@ -225,6 +225,7 @@ resource "libvirt_domain" "bastion" {
 
   network_interface { 
     network_name = "vlan-mgmt" 
+    mac          = "52:54:00:00:10:10"
     wait_for_lease = false
   }
 
@@ -254,6 +255,7 @@ resource "libvirt_domain" "proxy" {
 
   network_interface { 
     network_name = "vlan-dmz"
+    mac          = "52:54:00:00:20:10"
     wait_for_lease = false
     }
 
@@ -282,6 +284,7 @@ resource "libvirt_domain" "prod" {
 
   network_interface { 
     network_name = "vlan-prod"
+    mac          = "52:54:00:00:30:10"
     wait_for_lease = false
     }
 
@@ -310,6 +313,7 @@ resource "libvirt_domain" "backup" {
 
   network_interface { 
     network_name = "vlan-backup"
+    mac          = "52:54:00:00:40:10"
     wait_for_lease = false
     }
 
@@ -339,6 +343,7 @@ resource "libvirt_domain" "monitor" {
 
   network_interface { 
     network_name = "vlan-monitor"
+    mac          = "52:54:00:00:50:10"
     wait_for_lease = false
     }
 

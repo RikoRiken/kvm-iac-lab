@@ -43,19 +43,24 @@ write_files:
       # Pour chaque interface, on définit le range ET la gateway (option 3)
       dhcp-range=interface:ens4,172.16.10.100,172.16.10.200,255.255.255.0,12h
       dhcp-option=interface:ens4,3,172.16.10.1
+      dhcp-host=52:54:00:00:10:10,172.16.10.10,vm-bastion
 
       dhcp-range=interface:ens5,172.16.20.100,172.16.20.200,255.255.255.0,12h
       dhcp-option=interface:ens5,3,172.16.20.1
+      dhcp-host=52:54:00:00:20:10,172.16.20.10,vm-proxy
 
       dhcp-range=interface:ens6,172.16.30.100,172.16.30.200,255.255.255.0,12h
       dhcp-option=interface:ens6,3,172.16.30.1
+      dhcp-host=52:54:00:00:30:10,172.16.30.10,vm-prod
 
       dhcp-range=interface:ens7,172.16.40.100,172.16.40.200,255.255.255.0,12h
       dhcp-option=interface:ens7,3,172.16.40.1
+      dhcp-host=52:54:00:00:40:10,172.16.40.10,vm-backup
 
       dhcp-range=interface:ens8,172.16.50.100,172.16.50.200,255.255.255.0,12h
       dhcp-option=interface:ens8,3,172.16.50.1
-
+      dhcp-host=52:54:00:00:50:10,172.16.50.10,vm-monitor
+      
 runcmd:
   # A. CONFIGURATION RÉSEAU (AVANT l'installation des services)
   - ip link set ens4 up && ip addr add 172.16.10.1/24 dev ens4 || true
