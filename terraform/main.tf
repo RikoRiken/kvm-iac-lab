@@ -21,7 +21,7 @@ resource "libvirt_network" "wan" {
   name      = "wan-network"
   mode      = "nat"
   domain    = "wan.local"
-  addresses = ["192.168.122.0/24"]
+  addresses = ["192.168.150.0/24"]
   dhcp { enabled = true }
   dns { enabled = true } 
 }
@@ -189,7 +189,11 @@ resource "libvirt_domain" "router" {
   
   cloudinit = libvirt_cloudinit_disk.router_init.id
 
-  network_interface { network_name = "wan-network" }   # eth0
+  network_interface { 
+    network_name = "wan-network"
+    mac          = "52:54:00:00:99:11"
+    addresses    = ["192.168.150.11"] 
+    }   # eth0
   network_interface { network_name = "vlan-mgmt" }     # eth1
   network_interface { network_name = "vlan-dmz" }      # eth2
   network_interface { network_name = "vlan-prod" }     # eth3
