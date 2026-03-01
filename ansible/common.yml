@@ -1,0 +1,25 @@
+---
+- name: Common & Prerequisites
+  hosts: all
+  become: yes  # "root" (sudo)
+
+  tasks:
+    - name: Mettre à jour le cache APT et faire un upgrade complet
+      apt:
+        update_cache: yes
+        upgrade: dist
+        cache_valid_time: 3600 # MAJ seulement si pas eu de apt-update dans la dernière heure
+
+    - name: Utilitaires d'administration
+      apt:
+        name:
+          - htop
+          - curl
+          - git
+          - tree
+          - bash-completion
+        state: present
+
+    - name: Fuseau horaire correct (Europe/Paris)
+      timezone:
+        name: Europe/Paris
