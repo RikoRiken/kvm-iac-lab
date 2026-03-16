@@ -7,8 +7,10 @@
 [![Kubernetes](https://img.shields.io/badge/-Kubernetes-326CE5?style=flat&logo=kubernetes&logoColor=white)](#)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=fff)](#)
 [![MariaDB](https://img.shields.io/badge/MariaDB-003545?logo=mariadb&logoColor=white)](#)
+![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?logo=nginx&logoColor=white)
 [![Grafana](https://img.shields.io/badge/Grafana-F46800?logo=grafana&logoColor=white)](#)
 [![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?logo=prometheus&logoColor=white)](#)
+
 
 <br>
 
@@ -40,7 +42,7 @@ The stack is strictly segmented into VLANs to enforce a **Zero-Trust** security 
 | **WAN** | - | Untrusted | Internet Simulation / NAT |
 | **MGMT** | 10 | Restricted | Bastion SSH, Ansible Controller |
 | **DMZ** | 20 | Front-End | Nginx Reverse Proxy, CrowdSec Agent |
-| **PROD** | 30 | Backend | **K3s Cluster** (BookStack, MariaDB) |
+| **PROD** | 30 | Backend | **K3s Cluster** (Website, MariaDB) |
 | **BACKUP**| 40 | Isolated | BorgBackup Repository |
 | **MONIT** | 50 | Observability | **PLG Stack** (Prometheus, Loki, Grafana) |
 
@@ -84,7 +86,7 @@ Launch the bootstrap script to build the infrastructure and configure services.
 
 ## 🛡️ Security Strategy
 
-- OPNsense Firewall: Acts as the central gateway. All Inter-VLAN traffic is inspected.
+- Debian router with `iptables-nft` Firewall: Acts as the central gateway. All Inter-VLAN traffic is inspected, and iptables rules are translated by kernel to nftables logic.
 
 - Deny All by Default: No traffic is allowed unless explicitly whitelisted.
 
