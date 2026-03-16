@@ -113,7 +113,6 @@
           COMMIT
       notify: Recharger iptables
 
-  # Les 'handlers' sont des tâches qui ne s'exécutent QUE si le fichier précédent a été modifié
   handlers:
     - name: Recharger iptables
       command: netfilter-persistent reload
