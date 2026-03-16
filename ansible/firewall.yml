@@ -1,0 +1,119 @@
+---
+- name: 2 - Network Firewall Rules (iptables)
+  hosts: routers
+  become: yes
+
+  tasks:
+    - name: Garantir que iptables-persistent est bien installé
+      apt:
+        name: iptables-persistent
+        state: present
+
+    - name: Déployer la Matrice de Flux (Deny All by Default)
+      copy:
+        dest: /etc/iptables/rules.v4
+        owner: root
+        group: root
+        mode: '0640'
+        content: |
+          # ========================================================
+          # KVM IAC LAB - FIREWALL POLICY (voir firewall-policy.md)
+          # ========================================================
+          
+          *nat
+          :PREROUTING ACCEPT [0:0]
+          :POSTROUTING ACCEPT [0:0]
+          
+          # [ADM-01] Port Forward WAN:2222 -> BASTION:22
+          -A PREROUTING -i ens3 -p tcp --dport 2222 -j DNAT --to-destination 172.16.10.10:22
+          
+          # [APP-01] Port Forward WAN:80/443 -> PROXY:80/443
+          -A PREROUTING -i ens3 -p tcp -m multiport --dports 80,443 -j DNAT --to-destination 172.16.20.10
+          
+          # NAT Sortant (Masquerade indispensable pour l'accès Internet des VMs)
+          -A POSTROUTING -o ens3 -j MASQUERADE
+          COMMIT
+
+          *filter
+          # --- DEFAULT POLICIES (DENY ALL) ---
+          :INPUT DROP [0:0]
+          :FORWARD DROP [0:0]
+          :OUTPUT ACCEPT [0:0]
+
+          # --- STATEFUL INSPECTION ---
+          # Autorise le trafic de retour pour les connexions déjà établies
+          -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+          -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+
+          # ========================================================
+          # 1. CHAÎNE INPUT (Trafic à destination du Routeur)
+          # ========================================================
+          
+          # Loopback interne
+          -A INPUT -i lo -j ACCEPT
+          
+          # [ADM-03] Urgence SSH Firewall (depuis MGMT)
+          -A INPUT -i ens4 -s 172.16.10.0/24 -p tcp --dport 22 -j ACCEPT
+          
+          # [INF-01] DNS Resolution (dnsmasq)
+          -A INPUT -s 172.16.0.0/16 -p udp --dport 53 -j ACCEPT
+          -A INPUT -s 172.16.0.0/16 -p tcp --dport 53 -j ACCEPT
+          
+          # [INF-04] ICMP Ping Gateway
+          -A INPUT -s 172.16.0.0/16 -p icmp -j ACCEPT
+
+          # ========================================================
+          # 2. CHAÎNE FORWARD (Trafic traversant le Routeur / Inter-VLAN)
+          # ========================================================
+          
+          # --- RÈGLES LIÉES AU NAT (Autoriser l'entrée depuis le WAN) ---
+          # [ADM-01] Autoriser le trafic routé vers le Bastion
+          -A FORWARD -d 172.16.10.10 -p tcp --dport 22 -j ACCEPT
+          
+          # [APP-01] Autoriser le trafic routé vers le Proxy
+          -A FORWARD -d 172.16.20.10 -p tcp -m multiport --dports 80,443 -j ACCEPT
+
+          # --- FLUX ADMINISTRATION ---
+          # [ADM-04] SSH Jump depuis Bastion vers tout le Lab
+          -A FORWARD -s 172.16.10.10 -d 172.16.0.0/16 -p tcp --dport 22 -j ACCEPT
+
+          # --- FLUX BUSINESS ---
+          # [APP-02] Proxy vers K3s NodePort
+          -A FORWARD -s 172.16.20.10 -d 172.16.30.10 -p tcp --dport 30080 -j ACCEPT
+          
+          # --- FLUX INFRASTRUCTURE (Sorties Internet) ---
+          # [APP-03] & [INF-03] Mises à jour & Docker Pull vers Internet (80/443)
+          -A FORWARD -s 172.16.0.0/16 -o ens3 -p tcp -m multiport --dports 80,443 -j ACCEPT
+
+          # Autoriser la résolution DNS vers Internet (Port 53 UDP/TCP)
+          -A FORWARD -s 172.16.0.0/16 -o ens3 -p udp --dport 53 -j ACCEPT
+          -A FORWARD -s 172.16.0.0/16 -o ens3 -p tcp --dport 53 -j ACCEPT
+
+          # [INF-02] NTP Sync vers Internet (123 UDP)
+          -A FORWARD -s 172.16.0.0/16 -o ens3 -p udp --dport 123 -j ACCEPT
+
+          # --- FLUX MONITORING ---
+          # [MON-01] Prometheus Scrape (Monitor -> Tous)
+          -A FORWARD -s 172.16.50.10 -d 172.16.0.0/16 -p tcp --dport 9100 -j ACCEPT
+
+          # [MON-02] Kube API Monitoring (Monitor -> Prod)
+          -A FORWARD -s 172.16.50.10 -d 172.16.30.10 -p tcp --dport 6443 -j ACCEPT
+
+          # [MON-03] Loki Push (Tous -> Monitor)
+          -A FORWARD -s 172.16.0.0/16 -d 172.16.50.10 -p tcp --dport 3100 -j ACCEPT
+
+          # --- FLUX BACKUP ---
+          # [BCK-01] Borg Push (Tous -> Backup)
+          -A FORWARD -s 172.16.0.0/16 -d 172.16.40.10 -p tcp --dport 22 -j ACCEPT
+
+          # --- OUTILS ---
+          # [INF-05] ICMP Admin (MGMT -> Tous)
+          -A FORWARD -s 172.16.10.0/24 -d 172.16.0.0/16 -p icmp -j ACCEPT
+
+          COMMIT
+      notify: Recharger iptables
+
+  # Les 'handlers' sont des tâches qui ne s'exécutent QUE si le fichier précédent a été modifié
+  handlers:
+    - name: Recharger iptables
+      command: netfilter-persistent reload
