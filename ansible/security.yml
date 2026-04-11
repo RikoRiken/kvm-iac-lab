@@ -1,0 +1,83 @@
+---
+# ==============================================================================
+# PHASE 3 : DURCISSEMENT DES PORTES D'ENTRÉE (BASTION & PROXY)
+# ==============================================================================
+
+- name: 1. Durcissement du Bastion (SSH Strict)
+  hosts: vm-bastion
+  become: yes
+  tasks:
+    - name: Désactiver l'authentification par mot de passe
+      ansible.builtin.lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+      notify: Restart SSH
+
+    - name: Désactiver le login Root direct
+      ansible.builtin.lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin no'
+        state: present
+      notify: Restart SSH
+
+    - name: Configurer le timeout d'inactivité (10 minutes)
+      ansible.builtin.lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^#?ClientAliveInterval'
+        line: 'ClientAliveInterval 600'
+        state: present
+      notify: Restart SSH
+
+  handlers:
+    - name: Restart SSH
+      ansible.builtin.service:
+        name: ssh
+        state: restarted
+
+- name: 2. Préparation du Reverse Proxy
+  hosts: vm-proxy
+  become: yes
+  tasks:
+    - name: Installer Nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+        update_cache: yes
+
+    - name: S'assurer que Nginx est démarré et activé
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: yes
+
+- name: 3. Déploiement de CrowdSec (Système de Prévention d'Intrusion)
+  hosts: vm-bastion, vm-proxy
+  become: yes
+  tasks:
+    - name: Télécharger le script d'installation du dépôt CrowdSec
+      ansible.builtin.get_url:
+        url: https://install.crowdsec.net
+        dest: /tmp/install_crowdsec.sh
+        mode: '0755'
+
+    - name: Exécuter le script d'installation du dépôt
+      ansible.builtin.command: /tmp/install_crowdsec.sh
+      args:
+        creates: /etc/apt/sources.list.d/crowdsec_crowdsec.list
+
+    - name: Installer CrowdSec et le bouncer Iptables
+      ansible.builtin.apt:
+        name: 
+          - crowdsec
+          - crowdsec-firewall-bouncer-iptables
+        state: present
+        update_cache: yes
+
+    - name: S'assurer que CrowdSec est démarré
+      ansible.builtin.service:
+        name: crowdsec
+        state: started
+        enabled: yes
