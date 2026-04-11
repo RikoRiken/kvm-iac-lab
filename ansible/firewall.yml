@@ -1,5 +1,9 @@
 ---
-- name: 2 - Network Firewall Rules (iptables)
+# ==============================================================================
+# PHASE 2 : Règle de pare-feu (iptables)
+# ==============================================================================
+
+- name: Network Firewall Rules (iptables)
   hosts: routers
   become: yes
 
