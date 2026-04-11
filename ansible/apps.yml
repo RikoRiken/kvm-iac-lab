@@ -39,7 +39,7 @@
           <!DOCTYPE html>
           <html>
             <body style="font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f4f9;">
-              <h1 style="color: #2c3e50;">🚀 Bienvenue sur l'infrastructure KVM IaC 🚀</h1>
+              <h1 style="color: #2c3e50;"> Bienvenue sur l'infrastructure KVM IaC </h1>
               <h3 style="color: #27ae60;">Trafic sécurisé via Reverse Proxy & Pare-feu Zero-Trust</h3>
               <p><i>Propulsé par Kubernetes (K3s) - Haute Disponibilité Active avec 2 Réplicas</i></p>
             </body>
