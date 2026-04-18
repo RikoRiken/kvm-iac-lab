@@ -22,6 +22,7 @@
           - git
           - tree
           - bash-completion
+          - cron
         state: present
 
     - name: Fuseau horaire correct (Europe/Paris)
