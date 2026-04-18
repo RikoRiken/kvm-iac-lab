@@ -6,6 +6,15 @@
 - name: Network Firewall Rules (iptables)
   hosts: routers
   become: yes
+  
+  tasks:  
+    - name: Activer le routage IPv4 (IP Forwarding) dans le noyau
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        sysctl_set: yes
+        state: present
+        reload: yes
 
   tasks:
     - name: Garantir que iptables-persistent est bien installé
