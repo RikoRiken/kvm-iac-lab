@@ -1,0 +1,9 @@
+---
+# Fichier d'orchestration global (site.yml)
+
+- import_playbook: firewall.yml
+- import_playbook: security.yml
+- import_playbook: common.yml
+- import_playbook: apps.yml
+- import_playbook: monitoring.yml
+- import_playbook: backup.yml
