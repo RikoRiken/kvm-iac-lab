@@ -1,0 +1,104 @@
+---
+# ==============================================================================
+# PHASE 6 : SAUVEGARDES AUTOMATISÉES (BORGBACKUP)
+# ==============================================================================
+
+- name: 1. Préparation du Serveur de Sauvegarde (Le Coffre-fort)
+  hosts: vm-backup
+  become: yes
+  tasks:
+    - name: 1.1 Installer BorgBackup
+      ansible.builtin.apt:
+        name: borgbackup
+        state: present
+        update_cache: yes
+
+    - name: 1.2 Créer le répertoire racine des sauvegardes
+      ansible.builtin.file:
+        path: /var/backups/borg
+        state: directory
+        owner: debian
+        group: debian
+        mode: '0700'
+
+- name: 2. Préparation du Client (La Production)
+  hosts: vm-prod
+  become: yes
+  tasks:
+    - name: 2.1 Installer BorgBackup
+      ansible.builtin.apt:
+        name: borgbackup
+        state: present
+        update_cache: yes
+
+    - name: 2.2 Générer une clé SSH pour root (sans mot de passe)
+      community.crypto.openssh_keypair:
+        path: /root/.ssh/id_ed25519
+        type: ed25519
+      register: ssh_key
+
+    - name: 2.3 Récupérer la clé publique de la Prod
+      ansible.builtin.slurp:
+        src: /root/.ssh/id_ed25519.pub
+      register: prod_pub_key
+
+- name: 3. Autoriser la Prod à écrire sur le Backup
+  hosts: vm-backup
+  become: yes
+  tasks:
+    - name: 3.1 Ajouter la clé SSH de la Prod aux clés autorisées
+      ansible.posix.authorized_key:
+        user: debian
+        state: present
+        key: "{{ hostvars['vm-prod']['prod_pub_key']['content'] | b64decode }}"
+
+- name: 4. Initialisation et Automatisation sur la Prod
+  hosts: vm-prod
+  become: yes
+  vars:
+    borg_repo: "debian@172.16.40.10:/var/backups/borg/prod-data"
+    borg_passphrase: "SuperSecretPassword2026" # Mot de passe de chiffrement
+  tasks:
+    - name: 4.1 Accepter l'empreinte SSH du serveur de backup (known_hosts)
+      ansible.builtin.shell: ssh-keyscan -H 172.16.40.10 >> /root/.ssh/known_hosts
+      args:
+        creates: /root/.ssh/known_hosts
+
+    - name: 4.2 Initialiser le dépôt Borg chiffré (si inexistant)
+      ansible.builtin.shell: |
+        export BORG_PASSPHRASE="{{ borg_passphrase }}"
+        borg init --encryption=repokey {{ borg_repo }}
+      register: borg_init
+      failed_when:
+        - borg_init.rc != 0
+        - "'already exists' not in borg_init.stderr"
+      changed_when: borg_init.rc == 0
+
+    - name: 4.3 Créer le script de sauvegarde (backup-now.sh)
+      ansible.builtin.copy:
+        dest: /usr/local/bin/backup-now.sh
+        mode: '0700'
+        content: |
+          #!/bin/bash
+          export BORG_PASSPHRASE="{{ borg_passphrase }}"
+          REPO="{{ borg_repo }}"
+
+          echo "[$(date)] Début de la sauvegarde..."
+          
+          # Sauvegarde du dossier de l'appli et de la config K3s
+          borg create --stats --compression zstd \
+            $REPO::"backup-{now:%Y-%m-%d_%H:%M}" \
+            /opt/demo-app \
+            /etc/rancher/k3s
+
+          echo "Nettoyage des anciennes sauvegardes (Rétention)..."
+          borg prune -v --list --keep-daily=7 --keep-weekly=4 $REPO
+          
+          echo "✅ Terminé."
+
+    - name: 4.4 Planifier la sauvegarde toutes les nuits à 2h00 (Cron)
+      ansible.builtin.cron:
+        name: "BorgBackup Quotidien"
+        minute: "0"
+        hour: "2"
+        job: "/usr/local/bin/backup-now.sh >> /var/log/borg-cron.log 2>&1"
