@@ -142,7 +142,7 @@
               restart: unless-stopped
 
     - name: 2.5 Relancer la stack
-      ansible.builtin.command: /usr/bin/docker-compose up -d --force-recreate
+      ansible.builtin.shell: /usr/bin/docker-compose up -d --force-recreate
       args:
         chdir: /opt/monitoring
 

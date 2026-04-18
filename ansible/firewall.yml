@@ -55,6 +55,9 @@
           
           # Loopback interne
           -A INPUT -i lo -j ACCEPT
+
+          # [ADM-00] Administration Ansible depuis le WAN
+          -A INPUT -i ens3 -p tcp --dport 22 -j ACCEPT
           
           # [ADM-03] Urgence SSH Firewall (depuis MGMT)
           -A INPUT -i ens4 -s 172.16.10.0/24 -p tcp --dport 22 -j ACCEPT
