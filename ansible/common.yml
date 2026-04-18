@@ -1,5 +1,13 @@
 ---
+<<<<<<< HEAD
 - name: 1 - Common & Prerequisites
+=======
+# ==============================================================================
+# PHASE 1 : Common & Prerequisites
+# ==============================================================================
+
+- name: Common & Prerequisites
+>>>>>>> feat/ansible
   hosts: all
   become: yes  # "root" (sudo)
 
@@ -8,7 +16,7 @@
       apt:
         update_cache: yes
         upgrade: dist
-        cache_valid_time: 3600 # MAJ seulement si pas eu de apt-update dans la dernière heure
+        cache_valid_time: 3600
 
     - name: Utilitaires d'administration
       apt:
@@ -18,8 +26,22 @@
           - git
           - tree
           - bash-completion
+          - cron
         state: present
 
     - name: Fuseau horaire correct (Europe/Paris)
       timezone:
         name: Europe/Paris
+
+- name: Prérequis spécifiques au Monitoring
+  hosts: vm-monitor
+  become: yes
+
+  tasks:
+    - name: Installer Docker et le plugin Compose
+      ansible.builtin.apt:  
+        name: 
+          - docker.io
+          - docker-compose
+        state: present
+        update_cache: yes

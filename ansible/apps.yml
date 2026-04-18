@@ -1,0 +1,96 @@
+---
+# ==============================================================================
+# PHASE 4 : LA PRODUCTION CLOUD-NATIVE
+# ==============================================================================
+
+- name: Déploiement de l'infrastructure applicative
+  hosts: vm-prod
+  become: yes
+  tasks:
+    - name: 1. Installer l'orchestrateur K3s (Si non présent)
+      ansible.builtin.shell: curl -sfL https://get.k3s.io | sh -
+      args:
+        creates: /usr/local/bin/k3s
+
+    - name: 2. S'assurer que le service K3s est démarré
+      ansible.builtin.service:
+        name: k3s
+        state: started
+        enabled: yes
+
+    - name: 3. Attendre que l'API Kubernetes soit prête (Environ 15-30 sec)
+      ansible.builtin.command: k3s kubectl get nodes
+      register: k3s_status
+      until: k3s_status.rc == 0
+      retries: 12
+      delay: 5
+      changed_when: false
+
+    - name: 4. Créer le répertoire de l'application
+      ansible.builtin.file:
+        path: /opt/demo-app
+        state: directory
+        mode: '0755'
+
+    - name: 5. Créer la page Web personnalisée (La Preuve pour le jury)
+      ansible.builtin.copy:
+        dest: /opt/demo-app/index.html
+        content: |
+          <!DOCTYPE html>
+          <html>
+            <body style="font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f4f9;">
+              <h1 style="color: #2c3e50;"> Bienvenue sur l'infrastructure KVM IaC </h1>
+              <h3 style="color: #27ae60;">Trafic sécurisé via Reverse Proxy & Pare-feu Zero-Trust</h3>
+              <p><i>Propulsé par Kubernetes (K3s) - Haute Disponibilité Active avec 2 Réplicas</i></p>
+            </body>
+          </html>
+
+    - name: 6. Créer le Manifeste Kubernetes (Déploiement + Service)
+      ansible.builtin.copy:
+        dest: /opt/demo-app/manifest.yaml
+        content: |
+          ---
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: web-demo
+          spec:
+            replicas: 2
+            selector:
+              matchLabels:
+                app: web-demo
+            template:
+              metadata:
+                labels:
+                  app: web-demo
+              spec:
+                containers:
+                - name: nginx
+                  image: nginx:alpine
+                  ports:
+                  - containerPort: 80
+                  volumeMounts:
+                  - name: html-volume
+                    mountPath: /usr/share/nginx/html
+                volumes:
+                - name: html-volume
+                  hostPath:
+                    path: /opt/demo-app
+          ---
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: web-demo-service
+          spec:
+            type: NodePort
+            selector:
+              app: web-demo
+            ports:
+              - port: 80
+                targetPort: 80
+                nodePort: 30080
+      notify: Appliquer le manifeste K3s
+
+  handlers:
+    - name: Appliquer le manifeste K3s
+      ansible.builtin.command: k3s kubectl apply -f /opt/demo-app/manifest.yaml
