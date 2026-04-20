@@ -4,10 +4,11 @@
 # ==============================================================================
 
 - name: Network Firewall Rules (iptables)
-  hosts: routers
+  hosts: router
   become: yes
   
-  tasks:  
+  tasks:
+    # 1. CRITIQUE : Sans ça, la machine ne route aucun paquet !
     - name: Activer le routage IPv4 (IP Forwarding) dans le noyau
       ansible.posix.sysctl:
         name: net.ipv4.ip_forward
@@ -16,12 +17,13 @@
         state: present
         reload: yes
 
-  tasks:
+    # 2. Installation de l'outil de sauvegarde
     - name: Garantir que iptables-persistent est bien installé
       apt:
         name: iptables-persistent
         state: present
 
+    # 3. Injection des règles complètes (qui incluent déjà les politiques DROP/ACCEPT)
     - name: Déployer la Matrice de Flux (Deny All by Default)
       copy:
         dest: /etc/iptables/rules.v4
@@ -30,7 +32,7 @@
         mode: '0640'
         content: |
           # ========================================================
-          # KVM IAC LAB - FIREWALL POLICY (voir firewall-policy.md)
+          # KVM IAC LAB - FIREWALL POLICY
           # ========================================================
           
           *nat
@@ -48,7 +50,7 @@
           COMMIT
 
           *filter
-          # --- DEFAULT POLICIES (DENY ALL) ---
+          # --- DEFAULT POLICIES ---
           :INPUT DROP [0:0]
           :FORWARD DROP [0:0]
           :OUTPUT ACCEPT [0:0]
@@ -129,7 +131,6 @@
           COMMIT
       notify: Recharger iptables
 
-  # Les 'handlers' sont des tâches qui ne s'exécutent QUE si le fichier précédent a été modifié
   handlers:
     - name: Recharger iptables
       command: netfilter-persistent reload
