@@ -26,3 +26,4 @@ ansible_collections/
 # --- Logs & Temp ---
 *.log
 tmp/
+iac-operations.log
