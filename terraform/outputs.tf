@@ -12,14 +12,10 @@
 
 output "bastion_ip" {
   description = "Bastion Public IP (Management)"
-  value       = try(libvirt_domain.bastion.network_interface[0].addresses[0], "Wait for OPNsense DHCP...")
+  value       = try(libvirt_domain.bastion.network_interface[0].addresses[0], "172.16.10.10, via router port 2222")
 }
 
 output "router_wan_ip" {
   description = "Router WAN IP (Web Interface)"
   value       = try(libvirt_domain.router.network_interface[0].addresses[0], "Check via 'terraform refresh' later")
-}
-
-output "setup_instruction" {
-  value = "Wait 2-3 minutes for the router to boot completely. Then run 'terraform refresh' to reveal IPs."
 }
