@@ -47,18 +47,23 @@ The stack is strictly segmented into VLANs to enforce a **Zero-Trust** security 
 | **MONIT** | 50 | Observability | **PLG Stack** (Prometheus, Loki, Grafana) |
 
 > Check the [Firewall Policy](./docs/firewall_policy.md) for further information.
+
 <br>
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### 0. Prerequisites
 
-* Linux Host (Debian/Fedora/Ubuntu) with virtualization support (VT-x/AMD-v).
-* `libvirt` (KVM) installed and running.
-* `terraform` and `ansible` installed.
+* **OS:** A Linux Host (Debian/Fedora/Ubuntu) with hardware virtualization enabled (VT-x/AMD-v).
+* **Hypervisor:** `libvirt` and KVM installed and the `libvirtd` service running.
+* **Permissions:** Your current user **must** belong to the `libvirt` group (`sudo usermod -aG libvirt $USER`).
+* **Tools:** `terraform`, `ansible` (with `ansible-galaxy`), and `git` installed.
+
+<br>
 
 ### 1. Installation
-Clone the repository:
+
+Clone the repository to your local machine:
 ```bash
 git clone https://github.com/RikoRiken/kvm-iac-lab.git
 cd kvm-iac-lab
@@ -68,19 +73,26 @@ cd kvm-iac-lab
 
 ### 2. Configuration
 
-
-*incoming...*
+* **No local SSH configuration is required.** The Ansible inventory natively handles the complex routing and `ProxyJump` through the firewall to reach internal networks.
+* The deployment script includes a **Pre-flight Check** that will scan your host environment, verify dependencies, and ensure your system is ready.
 
 <br>
 
-### 3. Deploy
+### 3. Deployment
 
-Launch the bootstrap script to build the infrastructure and configure services.
+The infrastructure lifecycle is fully automated via a single entrypoint script `deploy.sh`. All operations are logged automatically in `iac-operations.log`.
 
+**To build the infrastructure:**
 ```bash
-./scripts/deploy.sh
+./deploy.sh --apply
 ```
-*Note: The deployment takes approximately **5-8 minutes** depending on your internet connection (Cloud Images download).*
+*Note: The deployment takes approximately **5-8 minutes** depending on your internet connection (Debian Cloud Image download) and CPU speed. A post-deployment summary will output all your access credentials and URLs.*at the end of the process
+
+**To destroy the infrastructure:**
+```bash
+./deploy.sh --destroy
+```
+*Note: This command will safely destroy all KVM resources, networks, and clean up local SSH/Ansible caches, leaving your host exactly as it was.*
 
 <br>
 
