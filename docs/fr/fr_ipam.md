@@ -4,7 +4,7 @@
 
 ### 1.1 Identité Réseau
 * **Plage Réseau Privée :** `172.16.0.0/16` (RFC1918)
-* **Technologie :** Réseaux virtuels isolés (KVM/Libvirt) routés par OPNsense.
+* **Technologie :** Réseaux virtuels isolés (KVM/Libvirt) routés par NFTables.
 
 ### 1.2 Convention de Nommage
 Format : `vm-<rôle>`
@@ -18,7 +18,7 @@ Pour chaque sous-réseau (Subnet `/24`), la répartition est standardisée :
 | `.1` - `.9` | **Infrastructure** | Réservé Switchs virtuels & Équipements réseau |
 | `.10` - `.99` | **Serveurs (IP Fixe)** | VMs Infrastructure et Applications |
 | `.100` - `.199` | **DHCP Pool** | Clients temporaires (si applicable) |
-| `.254` | **Gateway** | Interface du Pare-Feu (OPNsense) |
+| `.254` | **Gateway** | Interface du Pare-Feu |
 
 ---
 

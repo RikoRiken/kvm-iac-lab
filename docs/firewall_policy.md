@@ -4,7 +4,7 @@ This document defines the filtering policy applied on the **Debian Router** cent
 
 ## 1. Objects & Aliases (Definitions)
 
-To simplify OPNsense configuration and readability, the following aliases are used:
+To simplify NFTables configuration and readability, the following aliases are used:
 
 | Alias | Value / CIDR | Description |
 | :--- | :--- | :--- |
@@ -21,7 +21,7 @@ To simplify OPNsense configuration and readability, the following aliases are us
 | `HOST_MONITOR`| `172.16.50.10` | Monitoring VM (PLG Stack) |
 | `GW_FW` | `172.16.x.254` | Firewall LAN Interfaces |
 
-> 💡 **Automation Note:** These aliases are automatically provisioned in OPNsense via Ansible. If the IP plan is modified in the project variables, these aliases are updated dynamically.
+> 💡 **Automation Note:** These aliases are automatically provisioned in NFTables via Ansible. If the IP plan is modified in the project variables, these aliases are updated dynamically.
 
 ---
 
@@ -35,7 +35,6 @@ To simplify OPNsense configuration and readability, the following aliases are us
 | ID | Source | Destination | Port / Proto | Action | Description / Justification |
 | :--- | :--- | :--- | :--- | :---: | :--- |
 | **ADM-01** | *INTERNET* | `HOST_BASTION` | 2222 (TCP) | ✅ ALLOW | **Port Forward**: `WAN:2222` -> `HOST_BASTION:22`.<br>⚠️ Security: Key-based authentication only. Passwords disabled. Bruteforce protection via CrowdSec. |
-| **ADM-02** | `VLAN_MGMT` | `GW_FW` | 443 (TCP) | ✅ ALLOW | OPNsense Web GUI access from Admin Network. |
 | **ADM-03** | `VLAN_MGMT` | `GW_FW` | 22 (TCP) | ✅ ALLOW | Emergency SSH access to Firewall. |
 | **ADM-04** | `HOST_BASTION` | `ALL_VLAN` | 22 (TCP) | ✅ ALLOW | **SSH Jump**: The Bastion must be able to manage all internal VMs. |
 
@@ -69,7 +68,7 @@ To simplify OPNsense configuration and readability, the following aliases are us
 
 | ID | Source | Destination | Port / Proto | Action | Description / Justification |
 | :--- | :--- | :--- | :--- | :---: | :--- |
-| **INF-01** | `ALL_VLAN` | `GW_FW` | 53 (UDP/TCP)| ✅ ALLOW | DNS Resolution via OPNsense Resolver (Unbound). |
+| **INF-01** | `ALL_VLAN` | `GW_FW` | 53 (UDP/TCP)| ✅ ALLOW | DNS Resolution via NFTables Resolver (Unbound). |
 | **INF-02** | `ALL_VLAN` | `GW_FW` | 123 (UDP) | ✅ ALLOW | NTP Time Synchronization. |
 | **INF-03** | `ALL_VLAN` | *INTERNET* | 80, 443 (TCP)| ✅ ALLOW | System & CrowdSec updates. Whitelist proxy (Squid) added for hardening. |
 | **INF-04** | `ALL_VLAN` | `GW_FW` | ICMP (Ping) | ✅ ALLOW | Connectivity check to Gateway/Firewall. |
