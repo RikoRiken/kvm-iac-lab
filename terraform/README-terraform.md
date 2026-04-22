@@ -4,7 +4,7 @@ This directory contains the Terraform code used to deploy a fully segmented and 
 
 ## Objective
 Deploy the following infrastructure with a single command (`terraform apply`), ensuring "Zero Touch" automation:
-- **1 Router/Firewall** (OPNsense) automatically configured.
+- **1 Router/Firewall** (NFTables) automatically configured.
 - **5 Isolated Networks** (VLANs) simulating an enterprise architecture.
 - **Application Servers** (Bastion, Production, Monitoring, etc.) running on Debian 12.
 
@@ -15,11 +15,11 @@ Deploy the following infrastructure with a single command (`terraform apply`), e
 | File | Description |
 | :--- | :--- |
 | `main.tf` | Core definition of VMs (Compute) and Networks. |
-| `opnsense_setup.tf` | **Advanced Logic**: Handles OPNsense image download and configuration injection (XML/Fat32) for zero-touch provisioning. |
 | `variables.tf` | Parameter definitions (RAM, IPs, Domain Name) for portability. |
 | `outputs.tf` | Displays critical IPs (Bastion, Firewall WAN) after deployment. |
+| `router_setup.tf` | Setup Router rules and configuration. |
 | `cloud_init.cfg` | Post-boot configuration for Debian VMs (Users, SSH Keys, Packages). |
-| `terraform.tfvars.example` | (Delete `.example` to use) Local variable overrides (e.g., local image path, RAM sizing). |
+| `terraform.tfvars.example` | (Delete `.example` to use) Local variable overrides (e.g., local image path, RAM sizing). |x
 
 ---
 
@@ -33,7 +33,7 @@ We use this community provider (the de facto standard for KVM) instead of the of
 ### 2. Network Management (`mode = "none"`)
 All internal networks (Mgmt, DMZ, Prod...) are defined with `mode = "none"`.
 - **Explanation:** KVM creates the virtual "cables" and switches (Layer 2) but provides **no services** (no DHCP, no DNS, no Routing).
-- **Advantage:** The **OPNsense VM** handles all traffic. This guarantees strict isolation (Air Gap) and forces traffic to pass through the firewall rules.
+- **Advantage:** The **Firewall VM** handles all traffic. This guarantees strict isolation (Air Gap) and forces traffic to pass through the firewall rules.
 
 ### 3. Storage (QCOW2 & Copy-on-Write)
 - **Base Image:** A single Debian Cloud image is downloaded once.
@@ -42,15 +42,13 @@ All internal networks (Mgmt, DMZ, Prod...) are defined with `mode = "none"`.
 
 ---
 
-## OPNsense Automation (`opnsense_setup.tf`)
-
-Since OPNsense does not support Cloud-Init natively, we implemented a custom injection method to avoid manual setup.
+## Router Automation (`router_setup.tf`)
 
 1.  **Auto-Download:** Terraform uses `wget` and `qemu-img` via a `null_resource` to fetch and convert the official Nano image.
 2.  **Configuration Injection:**
     - Terraform generates an XML file (`config.xml`) containing interface mappings and SSH activation.
     - This file is converted into a small FAT32 virtual disk using `virt-make-fs` (part of `libguestfs`).
-3.  **Boot Process:** The disk is attached to the VM. OPNsense detects the configuration drive at boot and triggers its "Importer" routine.
+3.  **Boot Process:** The disk is attached to the VM. Router detects the configuration drive at boot and triggers its "Importer" routine.
 
 ---
 
@@ -80,9 +78,8 @@ sudo usermod -aG libvirt $(whoami)
     ```
 
 ### Access
-Once deployed, wait 2-3 minutes for OPNsense to fully boot, then run `terraform refresh`.
+Once deployed, wait 2-3 minutes for Firewall to fully boot, then run `terraform refresh`.
 - **Bastion:** `ssh debian@<BASTION_IP>`
-- **OPNsense (Web UI):** `https://<WAN_IP>` (Credentials: `root` / `opnsense`)
 
 ---
 
