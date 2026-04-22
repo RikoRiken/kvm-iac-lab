@@ -4,7 +4,6 @@
 # ==============================================================================
 
 - name: Common & Prerequisites
->>>>>>> feat/ansible
   hosts: all
   become: yes  # "root" (sudo)
 
