@@ -128,7 +128,7 @@ deploy_infra() {
     echo -e "${GREEN}Grafana (Monitoring)${NC}    : http://localhost:3000"
     echo -e "------------------------------------------------------------------"
     echo -e "${YELLOW}Astuce :${NC} Pour accéder à Grafana, ouvrez un tunnel SSH depuis votre PC :"
-    echo -e "   ${BLUE}ssh -L 3000:172.16.50.10:3000 debian@$FW_IP -p 2222${NC}\n"
+    echo -e "   ${BLUE}ssh -J debian@192.168.150.11:2222 -L 3000:localhost:3000 debian@172.16.50.10 -N${NC}\n"
 }
 
 # ---------------------------------------------------------
