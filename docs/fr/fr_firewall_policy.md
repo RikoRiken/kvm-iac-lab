@@ -33,9 +33,8 @@ Pour simplifier la lecture et la configuration du routeur/pare-feu, les alias su
 | ID | Source | Destination | Port / Proto | Action | Description / Justification |
 | :--- | :--- | :--- | :--- | :---: | :--- |
 | **ADM-01** | *INTERNET* | `HOST_BASTION` | 2222 (TCP) | ✅ ALLOW | Port Forward : `WAN:2222` -> `HOST_BASTION:22`.<br>⚠️ Sécurité : Authentification par Clé uniquement. Mots de passe désactivés. Protection bruteforce par CrowdSec. |
-| **ADM-02** | `VLAN_MGMT` | `GW_FW` | 443 (TCP) | ✅ ALLOW | Accès à l'interface web du pare-feu depuis le réseau d'admin. |
-| **ADM-03** | `VLAN_MGMT` | `GW_FW` | 22 (TCP) | ✅ ALLOW | Accès SSH de secours au Firewall. |
-| **ADM-04** | `HOST_BASTION` | `ALL_VLAN` | 22 (TCP) | ✅ ALLOW | **Rebond SSH** : Le Bastion doit pouvoir administrer toutes les VMs internes. |
+| **ADM-02** | `VLAN_MGMT` | `GW_FW` | 22 (TCP) | ✅ ALLOW | Accès SSH de secours au Firewall. |
+| **ADM-03** | `HOST_BASTION` | `ALL_VLAN` | 22 (TCP) | ✅ ALLOW | **Rebond SSH** : Le Bastion doit pouvoir administrer toutes les VMs internes. |
 
 ### 2.2 Flux Métier (Application BookStack)
 *Objectif : Faire fonctionner l'application pour les utilisateurs finaux.*
