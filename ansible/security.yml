@@ -41,6 +41,13 @@
   hosts: vm-proxy
   become: yes
   tasks:
+    - name: Attendre la libération des verrous APT (unattended-upgrades)
+      ansible.builtin.shell: |
+        while fuser /var/lib/dpkg/lock /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 5; done;
+      args:
+        executable: /bin/bash
+      changed_when: false
+
     - name: Installer Nginx
       ansible.builtin.apt:
         name: nginx
@@ -57,6 +64,20 @@
   hosts: vm-bastion, vm-proxy
   become: yes
   tasks:
+    - name: Attendre la libération des verrous APT (unattended-upgrades)
+      ansible.builtin.shell: |
+        while fuser /var/lib/dpkg/lock /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 5; done;
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Mettre à jour le cache APT et pré-installer gnupg
+      ansible.builtin.apt:
+        name: gnupg
+        update_cache: yes
+      retries: 3
+      delay: 5
+      
     - name: Télécharger le script d'installation du dépôt CrowdSec
       ansible.builtin.get_url:
         url: https://install.crowdsec.net
@@ -81,6 +102,7 @@
         name: crowdsec
         state: started
         enabled: yes
+
 
 - name: 4. Configuration finale du Reverse Proxy
   hosts: vm-proxy

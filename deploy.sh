@@ -104,8 +104,8 @@ deploy_infra() {
     cd ..
 
     echo -e "\n${GREEN}[4/5] Attente du démarrage des systèmes...${NC}"
-    echo -e "${YELLOW}Pause de 120 secondes...${NC}"
-    sleep 120
+    echo -e "${YELLOW}Pause de 150 secondes...${NC}"
+    sleep 150
 
     echo -e "\n${GREEN}[5/5] Configuration logicielle (Ansible)...${NC}"
     cd ansible
